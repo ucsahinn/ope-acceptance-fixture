@@ -1,0 +1,14 @@
+---
+import { getCollection } from "astro:content";
+const articles = (await getCollection("articles")).sort((a, b) => b.data.publishedAt.localeCompare(a.data.publishedAt));
+---
+<html lang="tr">
+  <head><meta charset="utf-8" /><title>OPE acceptance fixture</title></head>
+  <body>
+    <h1>OPE acceptance fixture</h1>
+    <p>Synthetic, disposable test site. Not a real publication.</p>
+    <ul>
+      {articles.map((article) => <li><a href={`/${article.id}/`}>{article.data.locale}: {article.data.title}</a></li>)}
+    </ul>
+  </body>
+</html>

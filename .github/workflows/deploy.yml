@@ -1,0 +1,38 @@
+name: deploy
+on:
+  workflow_dispatch:
+    inputs:
+      intent_key:
+        description: "OPE deploy intent key (64 hex)"
+        required: true
+        type: string
+      merge_sha:
+        description: "Exact merge commit SHA (40 hex)"
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  deploy:
+    name: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate inputs
+        env:
+          INTENT_KEY: ${{ inputs.intent_key }}
+          MERGE_SHA: ${{ inputs.merge_sha }}
+        run: |
+          [[ "$INTENT_KEY" =~ ^[0-9a-f]{64}$ ]] || { echo "invalid intent_key"; exit 1; }
+          [[ "$MERGE_SHA" =~ ^[0-9a-f]{40}$ ]] || { echo "invalid merge_sha"; exit 1; }
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.merge_sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+      - run: npm run build
+      - name: No-op deploy
+        env:
+          MERGE_SHA: ${{ inputs.merge_sha }}
+        run: echo "Synthetic fixture; nothing is deployed. Built $MERGE_SHA."
